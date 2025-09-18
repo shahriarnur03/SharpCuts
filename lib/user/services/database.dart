@@ -24,6 +24,24 @@ class DatabaseMethods {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> getUserDetailsById(String userId) async {
+    try {
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(userId)
+          .get();
+
+      if (documentSnapshot.exists) {
+        return documentSnapshot.data() as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      print("Error getting user details by ID: $e");
+      return null;
+    }
+  }
+  
   Future addUserBooking(Map<String, dynamic> userInfoMap) async {
     return await FirebaseFirestore.instance
         .collection("Booking")

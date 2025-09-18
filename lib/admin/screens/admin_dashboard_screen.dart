@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:sharpcuts/admin/services/admin_auth_service.dart';
 import 'package:sharpcuts/admin/services/database.dart';
 import 'package:sharpcuts/admin/utils/firebase_access_checker.dart';
@@ -24,7 +23,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     // Initialize booking stream
     bookingStream = DatabaseMethods().getBookings();
     
-    // Check if Firestore has any bookings, if not add a test booking
+    // Check if Firestore has any bookings
     _checkAndAddTestBookingIfNeeded();
     
     // Verify admin collection
@@ -55,66 +54,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       
       debugPrint("Found ${snapshot.docs.length} bookings in the collection");
       
-      // If no bookings exist, add a test booking
+      // Just check if any bookings exist without filtering
       if (snapshot.docs.isEmpty) {
-        debugPrint("No bookings found, adding test booking");
-        
-        final testBookingData = {
-          'Name': 'Test Customer',
-          'Service': 'Haircut',
-          'Date': '${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}',
-          'Time': '10:00 AM',
-          'Status': 'Pending',
-          'Email': 'test@example.com',
-          'Phone': '1234567890',
-          // Adding createdAt timestamp
-          'CreatedAt': FieldValue.serverTimestamp(),
-          'IsTestData': true,
-        };
-        
-        await bookingsRef.add(testBookingData);
-        debugPrint("Test booking added successfully with data: $testBookingData");
-        
-        // Refresh the stream
-        setState(() {
-          bookingStream = DatabaseMethods().getBookings();
-        });
+        debugPrint("No bookings found. Booking data should be added through user app.");
       } else {
-        debugPrint("Bookings already exist: ${snapshot.docs.length}");
-        
-        // Check if any existing booking is a test booking
-        bool hasTestBooking = false;
-        for (var doc in snapshot.docs) {
-          final data = doc.data();
-          if (data['IsTestData'] == true) {
-            hasTestBooking = true;
-            break;
-          }
-        }
-        
-        // If we don't have a test booking, add one for demonstration
-        if (!hasTestBooking) {
-          debugPrint("No test bookings found, adding one for demonstration");
-          await bookingsRef.add({
-            'Name': 'Demo Booking',
-            'Service': 'Beard Trim',
-            'Date': '${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}',
-            'Time': '2:00 PM',
-            'Status': 'Pending',
-            'Email': 'demo@example.com',
-            'Phone': '9876543210',
-            'CreatedAt': FieldValue.serverTimestamp(),
-            'IsTestData': true,
-          });
-          
-          // Refresh the stream
-          setState(() {
-            bookingStream = DatabaseMethods().getBookings();
-          });
-        }
+        debugPrint("Bookings exist: ${snapshot.docs.length}");
       }
     } catch (e) {
-      debugPrint("Error checking/adding test booking: $e");
+      debugPrint("Error checking bookings: $e");
     }
   }
 
@@ -186,10 +133,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 Icon(Icons.calendar_today_outlined, size: 48, color: AppColors.textColor),
                 SizedBox(height: 16),
                 Text("No bookings found", style: TextStyle(color: AppColors.textColor, fontSize: 18)),
+                SizedBox(height: 8),
+                Text(
+                  "When customers make bookings through the app, they will appear here", 
+                  style: TextStyle(color: AppColors.lightTextColor, fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
                 SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _checkAndAddTestBookingIfNeeded,
-                  child: const Text("Add Test Booking"),
+                ElevatedButton.icon(
+                  icon: Icon(Icons.refresh),
+                  label: Text("Refresh"),
+                  onPressed: () {
+                    setState(() {
+                      bookingStream = DatabaseMethods().getBookings();
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor,
+                    foregroundColor: AppColors.textColor,
+                  ),
                 ),
               ],
             ),
@@ -203,125 +165,306 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           itemBuilder: (context, index) {
             DocumentSnapshot ds = snapshot.data.docs[index];
             return Card(
-              color: AppColors.cardColor,
-              margin: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 30,
-                          backgroundColor: AppColors.accentColor,
-                          backgroundImage: const AssetImage('assets/images/profile.png'),
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: AppColors.primaryColor.withOpacity(0.3), width: 1),
+              ),
+              color: AppColors.accentColor.withOpacity(0.8),
+              margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: const LinearGradient(
+                    colors: [
+                      AppColors.accentColor,
+                      AppColors.secondaryColor,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Service title header
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryColor.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        const SizedBox(width: 16.0),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Text(
+                          "${ds['Service'] ?? 'Booking Service'}",
+                          style: const TextStyle(
+                            color: AppColors.textColor, 
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 16.0),
+                      // Customer details
+                      Row(
+                        children: [
+                          // Avatar
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.primaryColor.withOpacity(0.7),
+                                width: 2,
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 30,
+                              backgroundColor: AppColors.secondaryColor,
+                              backgroundImage: const AssetImage('assets/images/profile.png'),
+                            ),
+                          ),
+                          const SizedBox(width: 16.0),
+                          // Customer info
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Customer name
+                                Row(
+                                  children: [
+                                    const Icon(Icons.person, size: 16, color: AppColors.lightTextColor),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        "${ds['Name'] ?? 'N/A'}",
+                                        style: const TextStyle(
+                                          color: AppColors.textColor, 
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                // Email if available
+                                if (ds['Email'] != null)
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.email, size: 16, color: AppColors.lightTextColor),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          "${ds['Email']}",
+                                          style: const TextStyle(
+                                            color: AppColors.lightTextColor, 
+                                            fontSize: 14,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                if (ds['Email'] != null)
+                                  const SizedBox(height: 6),
+                                // Date
+                                Row(
+                                  children: [
+                                    const Icon(Icons.calendar_today, size: 16, color: AppColors.lightTextColor),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      "${ds['Date'] ?? 'N/A'}",
+                                      style: const TextStyle(
+                                        color: AppColors.lightTextColor, 
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                // Time
+                                Row(
+                                  children: [
+                                    const Icon(Icons.access_time, size: 16, color: AppColors.lightTextColor),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      "${ds['Time'] ?? 'N/A'}",
+                                      style: const TextStyle(
+                                        color: AppColors.lightTextColor, 
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                // Phone
+                                if (ds['Phone'] != null)
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.phone, size: 16, color: AppColors.lightTextColor),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        "${ds['Phone']}",
+                                        style: const TextStyle(
+                                          color: AppColors.lightTextColor, 
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16.0),
+                      // Divider
+                      Divider(color: AppColors.primaryColor.withOpacity(0.3), thickness: 1),
+                      const SizedBox(height: 8.0),
+                      // Status and actions row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Status indicator
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: ds['Status'] == 'Accepted' 
+                                  ? Colors.green.withOpacity(0.2)
+                                  : ds['Status'] == 'Pending' 
+                                      ? Colors.orange.withOpacity(0.2)
+                                      : ds['Status'] == 'Rejected'
+                                          ? Colors.red.withOpacity(0.2)
+                                          : Colors.grey.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: ds['Status'] == 'Accepted' 
+                                    ? Colors.green
+                                    : ds['Status'] == 'Pending' 
+                                        ? Colors.orange
+                                        : ds['Status'] == 'Rejected'
+                                            ? Colors.red
+                                            : Colors.grey,
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  ds['Status'] == 'Accepted' 
+                                      ? Icons.check_circle
+                                      : ds['Status'] == 'Pending' 
+                                          ? Icons.pending
+                                          : ds['Status'] == 'Rejected'
+                                              ? Icons.cancel
+                                              : Icons.info,
+                                  size: 16,
+                                  color: ds['Status'] == 'Accepted' 
+                                      ? Colors.green
+                                      : ds['Status'] == 'Pending' 
+                                          ? Colors.orange
+                                          : ds['Status'] == 'Rejected'
+                                              ? Colors.red
+                                              : Colors.grey,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  ds['Status'] ?? 'Unknown',
+                                  style: TextStyle(
+                                    color: ds['Status'] == 'Accepted' 
+                                        ? Colors.green
+                                        : ds['Status'] == 'Pending' 
+                                            ? Colors.orange
+                                            : ds['Status'] == 'Rejected'
+                                                ? Colors.red
+                                                : Colors.grey,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Action buttons
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                "Service: ${ds['Service'] ?? 'N/A'}",
-                                style: const TextStyle(color: AppColors.textColor, fontSize: 16),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                "Name: ${ds['Name'] ?? 'N/A'}",
-                                style: const TextStyle(color: AppColors.textColor, fontSize: 16),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                "Date: ${ds['Date'] ?? 'N/A'}",
-                                style: const TextStyle(color: AppColors.textColor, fontSize: 16),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                "Time: ${ds['Time'] ?? 'N/A'}",
-                                style: const TextStyle(color: AppColors.textColor, fontSize: 16),
-                                overflow: TextOverflow.ellipsis,
+                              // Only show Accept button if status is not already Accepted
+                              if (ds['Status'] != 'Accepted')
+                                ElevatedButton.icon(
+                                  icon: const Icon(Icons.check, size: 16),
+                                  label: const Text("Accept"),
+                                  onPressed: () async {
+                                    await DatabaseMethods().acceptBooking(ds.id);
+                                    
+                                    // Refresh the booking stream to update UI
+                                    if (mounted) {
+                                      setState(() {
+                                        bookingStream = DatabaseMethods().getBookings();
+                                      });
+                                    }
+                                    
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        backgroundColor: Colors.green,
+                                        content: Text("Booking Accepted"),
+                                      ),
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  ),
+                                ),
+                              // Add spacing only if both buttons are shown
+                              if (ds['Status'] != 'Accepted')
+                                const SizedBox(width: 8.0),
+                              // Always show the Reject/Delete button
+                              ElevatedButton.icon(
+                                icon: const Icon(Icons.close, size: 16),
+                                label: Text(ds['Status'] == 'Accepted' ? "Cancel" : "Reject"),
+                                onPressed: () async {
+                                  // Instead of deleting, change status to Rejected
+                                  await DatabaseMethods().rejectBooking(ds.id);
+                                  
+                                  // Refresh the booking stream to update UI
+                                  if (mounted) {
+                                    setState(() {
+                                      bookingStream = DatabaseMethods().getBookings();
+                                    });
+                                  }
+                                  
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      backgroundColor: Colors.red,
+                                      content: Text(ds['Status'] == 'Accepted' ? "Booking Cancelled" : "Booking Rejected"),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16.0),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Status indicator
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: ds['Status'] == 'Accepted' 
-                                ? Colors.green.withOpacity(0.2)
-                                : ds['Status'] == 'Pending' 
-                                    ? Colors.orange.withOpacity(0.2)
-                                    : Colors.grey.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: ds['Status'] == 'Accepted' 
-                                  ? Colors.green
-                                  : ds['Status'] == 'Pending' 
-                                      ? Colors.orange
-                                      : Colors.grey,
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            ds['Status'] ?? 'Unknown',
-                            style: TextStyle(
-                              color: ds['Status'] == 'Accepted' 
-                                  ? Colors.green
-                                  : ds['Status'] == 'Pending' 
-                                      ? Colors.orange
-                                      : Colors.grey,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        // Action buttons
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () async {
-                                await DatabaseMethods().acceptBooking(ds.id);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    backgroundColor: Colors.green,
-                                    content: Text("Booking Accepted"),
-                                  ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                              ),
-                              child: const Text("Accept"),
-                            ),
-                            const SizedBox(width: 8.0),
-                            ElevatedButton(
-                              onPressed: () async {
-                                await DatabaseMethods().deleteBooking(ds.id);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    backgroundColor: Colors.red,
-                                    content: Text("Booking Rejected"),
-                                  ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                              ),
-                              child: const Text("Reject"),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -335,37 +478,32 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Dashboard'),
+        title: const Text(
+          'Admin',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.0,
+            color: AppColors.textColor,
+          ),
+        ),
         backgroundColor: AppColors.primaryColor,
+        elevation: 0,
         actions: [
-          // Check Firebase button
+          // Logout icon that uses the existing AdminAuthService logout method
           IconButton(
-            icon: const Icon(Icons.health_and_safety_outlined),
-            tooltip: "Check Firebase Access",
-            onPressed: () {
-              FirebaseAccessChecker.showAccessStatusDialog(context);
-            },
-          ),
-          // Logout button
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.logout, size: 18),
-              label: const Text('Logout'),
-              onPressed: () {
-                AdminAuthService.logoutAdmin(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  side: const BorderSide(color: Colors.white54, width: 1),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
+            icon: const Icon(
+              Icons.logout,
+              color: AppColors.textColor,
+              size: 24,
             ),
+            onPressed: () {
+              // Use the existing logout method which already has a confirmation dialog
+              AdminAuthService.logoutAdmin(context);
+            },
+            tooltip: 'Logout',
+            splashRadius: 24,
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Container(
@@ -384,39 +522,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              const Text(
-                "All Bookings",
-                style: TextStyle(
-                  color: AppColors.textColor,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4.0),
-              // Refresh button
-              ElevatedButton.icon(
-                icon: const Icon(Icons.refresh, size: 16),
-                label: const Text("Refresh Bookings"),
-                onPressed: () {
-                  setState(() {
-                    bookingStream = DatabaseMethods().getBookings();
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Refreshing bookings..."),
-                      duration: Duration(seconds: 1),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accentColor,
-                  foregroundColor: AppColors.textColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                ),
-              ),
+              // Dashboard header
+              
               const SizedBox(height: 16.0),
               Expanded(child: allBookings()),
             ],

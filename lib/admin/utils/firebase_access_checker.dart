@@ -31,6 +31,47 @@ class FirebaseAccessChecker {
       return false;
     }
   }
+
+  /// Checks Firestore connectivity and debugging status
+  static Future<Map<String, dynamic>> checkFirestoreConnection() async {
+    try {
+      debugPrint("Checking Firestore connection...");
+      
+      // Try to access the Booking collection
+      final snapshot = await FirebaseFirestore.instance
+          .collection("Booking")
+          .get();
+      
+      // Count total bookings and test bookings
+      int testBookings = 0;
+      int realBookings = 0;
+      
+      for (var doc in snapshot.docs) {
+        if (doc.data().containsKey('IsTestData') && doc['IsTestData'] == true) {
+          testBookings++;
+        } else {
+          realBookings++;
+        }
+      }
+      
+      // Get Firebase project ID
+      String projectId = FirebaseFirestore.instance.app.options.projectId;
+      
+      return {
+        'connected': true,
+        'totalBookings': snapshot.docs.length,
+        'realBookings': realBookings,
+        'testBookings': testBookings,
+        'projectId': projectId,
+      };
+    } catch (e) {
+      debugPrint("Error checking Firestore connection: $e");
+      return {
+        'connected': false,
+        'error': e.toString(),
+      };
+    }
+  }
   
   /// Creates a test booking document to verify write access
   static Future<bool> createTestBooking() async {

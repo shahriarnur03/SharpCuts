@@ -1,10 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:sharpcuts/routes/app_routes.dart';
+import 'package:sharpcuts/user/services/database.dart';
+import 'package:flutter/material.dart';
 
 class AuthController extends GetxController {
   static AuthController instance = Get.find();
   late Rx<User?> _user;
+  final DatabaseMethods _databaseMethods = DatabaseMethods();
 
   @override
   void onReady() {
@@ -30,10 +33,35 @@ class AuthController extends GetxController {
 
   void signUp(String name, String email, String password) async {
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      // Create the user in Firebase Authentication
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+      
+      // If successful, save user details to Firestore
+      if (userCredential.user != null) {
+        String userId = userCredential.user!.uid;
+        
+        // Set display name for the Firebase Auth user
+        await userCredential.user!.updateDisplayName(name);
+        
+        // Create user data map with standard field names
+        Map<String, dynamic> userMap = {
+          "Name": name,
+          "Email": email,
+          "Phone": "", // Default empty value for phone
+          "CreatedAt": DateTime.now().millisecondsSinceEpoch,
+          "LastUpdated": DateTime.now().millisecondsSinceEpoch,
+        };
+        
+        // Save user details to Firestore
+        await _databaseMethods.addUserDetails(userMap, userId);
+        
+        print("User details saved to Firestore for user: $email");
+      }
+      
+      // Navigate to home screen
       Get.offAllNamed(AppRoutes.home);
     } catch (e) {
       Get.snackbar(

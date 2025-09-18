@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:sharpcuts/constants/app_colors.dart';
 import 'package:sharpcuts/routes/app_routes.dart';
+import 'package:sharpcuts/user/controllers/auth_controller.dart';
 
-class AdminAuthService {
-  // Logout method for admin
-  static void logoutAdmin(BuildContext context) {
+class UserAuthService {
+  // Logout method for user
+  static void logoutUser(BuildContext context) {
     // Show confirmation dialog
     showDialog(
       context: context,
@@ -53,10 +54,12 @@ class AdminAuthService {
                 // Close dialog
                 Navigator.of(dialogContext).pop();
                 
-                // Use standard Navigator API instead of GetX to avoid any default dialogs
-                // This completely replaces the navigation stack with just the admin login screen
+                // Call logout from AuthController
+                AuthController.instance.logout();
+                
+                // Use standard Navigator API to avoid any default dialogs
                 Navigator.of(context).pushNamedAndRemoveUntil(
-                  AppRoutes.adminLogin, 
+                  AppRoutes.login, 
                   (route) => false
                 );
               },

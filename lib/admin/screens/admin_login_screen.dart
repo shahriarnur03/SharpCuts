@@ -24,15 +24,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => createAdminAccount(context),
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.primaryColor,
-        tooltip: 'Create Admin Account',
-        child: const Icon(Icons.person_add),
-      ),
       body: Container(
         width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -231,24 +225,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 20),
-                    // Admin Setup Option (Only for development)
-                    Align(
-                      alignment: Alignment.center,
-                      child: TextButton.icon(
-                        onPressed: () {
-                          Get.toNamed(AppRoutes.adminSetup);
-                        },
-                        icon: const Icon(Icons.admin_panel_settings, color: Colors.white70),
-                        label: const Text(
-                          "Create Admin Account",
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
                     ),
                   ],
                 ),
