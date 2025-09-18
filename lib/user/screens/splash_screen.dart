@@ -3,16 +3,28 @@ import 'package:get/get.dart';
 import 'package:sharpcuts/constants/app_colors.dart';
 import 'package:sharpcuts/routes/app_routes.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Delayed navigation to the home screen
-    Future.delayed(const Duration(seconds: 3), () {
-      Get.offAllNamed(AppRoutes.login);
-    });
+  State<SplashScreen> createState() => _SplashScreenState();
+}
 
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Always navigate to login screen after splash
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        print("Splash screen navigating to login");
+        Get.offAllNamed(AppRoutes.login);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -69,6 +81,7 @@ class SplashScreen extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      print("Get Started button pressed - navigating to login");
                       Get.offAllNamed(AppRoutes.login);
                     },
                     style: ElevatedButton.styleFrom(
@@ -88,16 +101,6 @@ class SplashScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextButton(
-                onPressed: () {
-                  Get.toNamed(AppRoutes.adminLogin);
-                },
-                child: const Text(
-                  'Admin Login',
-                  style: TextStyle(color: AppColors.lightTextColor),
                 ),
               ),
             ],

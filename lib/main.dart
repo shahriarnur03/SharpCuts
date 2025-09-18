@@ -10,7 +10,8 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  Get.put(AuthController());
+  // Initialize AuthController but don't trigger auth checks immediately
+  Get.put(AuthController(), permanent: true);
   runApp(const MyApp());
 }
 
