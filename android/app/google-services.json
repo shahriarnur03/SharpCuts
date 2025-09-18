@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1045528557295",
+    "project_id": "barberapp-1ef4a",
+    "storage_bucket": "barberapp-1ef4a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1045528557295:android:fcc5f39013c842ab898d1a",
+        "android_client_info": {
+          "package_name": "com.nur.sharpcuts"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTOMOatAcynIP-iuc208aqt7FdONF4Kik"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

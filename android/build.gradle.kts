@@ -1,6 +1,8 @@
 allprojects {
     repositories {
         google()
+        // Add JCenter as a mirror for Maven Central
+        maven { url = uri("https://jcenter.bintray.com/") }
         mavenCentral()
     }
 }
