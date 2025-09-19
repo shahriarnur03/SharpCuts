@@ -1,24 +1,33 @@
 <div align="center">
 
-<img src="assets/images/logo.png" alt="SharpCuts Logo" width="120" />
+<img src="assets/images/logo.png" alt="SharpCuts Logo" width="140" />
 
-### SharpCuts – Modern Barber Booking & Admin Panel
+<h2>✂️ SharpCuts – Modern Barber Booking & Admin Panel</h2>
 
-End‑to‑end Flutter + Firebase application for discovering grooming services, booking appointments, and managing shop operations via an integrated admin dashboard.
+<p>End‑to‑end <b>Flutter</b> + <b>Firebase</b> application for discovering grooming services, booking appointments, and managing shop operations via an integrated admin dashboard.</p>
 
----
+<p>
+<a href="https://flutter.dev" target="_blank"><img src="https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter&logoColor=white" /></a>
+<a href="https://firebase.google.com" target="_blank"><img src="https://img.shields.io/badge/Firebase-Auth%20%7C%20Firestore-ffca28?logo=firebase&logoColor=black" /></a>
+<img src="https://img.shields.io/badge/State%20Mgmt-GetX-7b2cbf" />
+<img src="https://img.shields.io/badge/Platforms-Android%20|%20iOS%20|%20Web-pink" />
+<img src="https://img.shields.io/badge/License-Pending-lightgrey" />
+</p>
 
-[Jump to Setup](#quick-start) · [Features](#features) · [Architecture](#architecture--tech-stack) · [Screens](#core-screens) · [Data Model](#data-model) · [Roadmap](#roadmap) · [Recruiter Notes](#why-this-project-matters)
+<p><b>Navigation:</b><br/>
+<a href="#quick-start">Setup</a> · <a href="#features">Features</a> · <a href="#architecture--tech-stack">Architecture</a> · <a href="#core-screens">Screens</a> · <a href="#data-model">Data</a> · <a href="#roadmap">Roadmap</a> · <a href="#why-this-project-matters">Recruiter Notes</a>
+</p>
 
+<hr />
 </div>
 
-## Overview
+## 🚀 Overview
 
 SharpCuts is a cross‑platform (iOS / Android / Web-ready) barber shop management and customer booking app built with Flutter 3, leveraging Firebase for authentication, data storage, and real‑time updates. It demonstrates clean state management with GetX, modular routing, and production‑oriented patterns (extensible service layer, typed navigation constants, async initialization, and Firestore data segregation).
 
-## Features
+## 🌟 Features
 
-### User (Customer)
+### 👤 User (Customer)
 
 -   Email + password authentication (Firebase Auth)
 -   Account creation with persisted profile (Firestore `users` collection)
@@ -26,14 +35,14 @@ SharpCuts is a cross‑platform (iOS / Android / Web-ready) barber shop manageme
 -   Book a service (creates document in `Booking` collection)
 -   Reactive updates to booking status (planned real-time status tracking)
 
-### Admin
+### 🛠️ Admin
 
 -   Secure login (separate admin auth flow)
 -   Dashboard to view all bookings (stream powered via Firestore snapshots)
 -   Accept / delete bookings (`Status` mutation and document removal)
 -   Add new services (UI implemented; persistence hook TODO)
 
-### Platform / Technical
+### 🧱 Platform / Technical
 
 -   Centralized route definitions via `AppRoutes`
 -   Dependency injection with `Get.put` for controllers
@@ -42,7 +51,7 @@ SharpCuts is a cross‑platform (iOS / Android / Web-ready) barber shop manageme
 -   Declarative theming & custom color constants (see `constants/`)
 -   Future-ready push/local notifications (dependency added: `flutter_local_notifications`)
 
-## Architecture & Tech Stack
+## 🧩 Architecture & Tech Stack
 
 | Layer               | Responsibility                              | Implementation                |
 | ------------------- | ------------------------------------------- | ----------------------------- |
@@ -58,7 +67,7 @@ Key Packages:
 -   `intl` – formatting (dates, currency extensibility)
 -   `flutter_local_notifications` – groundwork for reminders / confirmations
 
-## Core Screens
+## 🖥️ Core Screens
 
 | Route             | Screen               | Purpose                              |
 | ----------------- | -------------------- | ------------------------------------ |
@@ -72,7 +81,9 @@ Key Packages:
 | `/addService`     | AddServiceScreen     | UI to add new service (persist TODO) |
 | `/adminSetup`     | AdminSetupScreen     | Initial admin configuration          |
 
-## Data Model
+## 🗂️ Data Model
+
+> The data layer is intentionally lean to spotlight architectural decisions while remaining production-extensible.
 
 Current Firestore Collections (minimalistic, easily extensible):
 
@@ -101,13 +112,13 @@ Current Firestore Collections (minimalistic, easily extensible):
 }
 ```
 
-Potential Future Collections:
+📌 **Planned / Future Collections**
 
 -   `services` – Persist admin-created services
 -   `shops` / `locations` – Multi-branch scaling
 -   `notifications` – Audit trail & messaging
 
-## Quick Start
+## ⚡ Quick Start
 
 ### 1. Prerequisites
 
@@ -158,7 +169,7 @@ flutter run -d <device_id>
 
 Use the Signup screen or manually add a user via Firebase Console → Authentication.
 
-## Project Structure (Selective)
+## 🗃️ Project Structure (Selective)
 
 ```
 lib/
@@ -176,7 +187,7 @@ lib/
 assets/images/             # UI imagery & branding
 ```
 
-## Authentication Flow
+## 🔐 Authentication Flow
 
 1. App initializes Firebase.
 2. `AuthController` injected (`Get.put`).
@@ -184,11 +195,11 @@ assets/images/             # UI imagery & branding
 4. After login/signup → forced navigation to `/home`.
 5. Logout → `signOut()` triggers redirect to `/login`.
 
-## Booking Flow (Current)
+## 📅 Booking Flow (Current)
 
 User selects service (static list placeholder) → navigates to `/booking` → form submission → `DatabaseMethods.addUserBooking()` adds document to `Booking` → admin dashboard listens via snapshot stream → admin accepts or deletes.
 
-## Testing
+## 🧪 Testing
 
 Contains a starter widget test in `test/widget_test.dart`. Future expansion could include:
 
@@ -196,7 +207,7 @@ Contains a starter widget test in `test/widget_test.dart`. Future expansion coul
 -   Golden tests for consistent UI
 -   Integration test for full booking flow
 
-## Roadmap
+## 🛤️ Roadmap
 
 -   [ ] Persist services to `services` collection
 -   [ ] Role-based access (user vs admin claims)
@@ -208,7 +219,7 @@ Contains a starter widget test in `test/widget_test.dart`. Future expansion coul
 -   [ ] Multi-location support
 -   [ ] Dark mode & adaptive theming
 
-## Security Considerations
+## 🔒 Security Considerations
 
 See `firebase_security_rules.md` (add Firestore Rules such as restricting `Booking` writes to authenticated users and service/admin validation). Recommended rules outline:
 
@@ -227,7 +238,7 @@ function isAdmin(uid) {
 }
 ```
 
-## Why This Project Matters
+## 💼 Why This Project Matters
 
 For Recruiters / Reviewers:
 
@@ -238,7 +249,7 @@ For Recruiters / Reviewers:
 -   Prepares groundwork for real-time operations & notification integration.
 -   Clear extensibility path (services collection, roles, analytics).
 
-## Extensibility Examples
+## 🔧 Extensibility Examples
 
 Add service persistence (conceptual snippet):
 
@@ -253,19 +264,29 @@ Future addService(Map<String, dynamic> service) async {
 
 Then query services with a `StreamBuilder` to populate `HomeScreen` dynamically.
 
-## Contribution
+## 🤝 Contribution
 
 PRs welcome (fork → feature branch → PR). For larger changes open an issue first.
 
-## License
+## 📄 License
 
 Add a license (MIT recommended) to clarify usage intent.
 
-## Acknowledgements
+## 🙌 Acknowledgements
 
 -   Flutter & Firebase teams
 -   GetX community
 
 ---
 
-Made with Flutter ❤️ – striving for clean, maintainable, and scalable mobile architecture.
+<div align="center">
+
+### 📸 Screenshots (Coming Soon)
+
+<i>Add UI previews here (Home, Booking, Admin Dashboard) – helps recruiters quickly assess UX quality.</i>
+
+</div>
+
+---
+
+> Made with Flutter ❤️ – striving for clean, maintainable, and scalable mobile architecture.
